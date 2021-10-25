@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  yolo:
+    image: human_cam_yolo:latest
+    build: ./HumanCam_Yolov4_Deepsort
+    volumes:
+      - ./HumanCam_Yolov4_Deepsort:/yolo
+      # - ./yolo.service:/etc/systemd/system/yolo.service
+    networks:
+      - web_humancam
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    #   - "params=${params}"
+    # command: nvidia-smi
+    runtime: nvidia
+    command: pm2 start /yolo/object_tracker.py -- --weights '/yolo/checkpoints/yolov4-tiny-416/' --model yolov4 --tiny True --video 'rtsp://admin:m2m123123@10.15.0.4/stream1' --output '/yolo/data/outputs/' --dont_show True --output_format mp4v
+
+networks:
+  web_humancam:
+    external: true
