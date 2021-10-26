@@ -4,6 +4,10 @@ services:
   yolo:
     image: human_cam_yolo:latest
     build: ./HumanCam_Yolov4_Deepsort
+    depends_on: [web]
+    ports:
+      - 5555:5555
+    restart: always
     volumes:
       - ./HumanCam_Yolov4_Deepsort:/yolo
       # - ./yolo.service:/etc/systemd/system/yolo.service
@@ -14,8 +18,35 @@ services:
     #   - "params=${params}"
     # command: nvidia-smi
     runtime: nvidia
-    command: pm2 start /yolo/object_tracker.py -- --weights '/yolo/checkpoints/yolov4-tiny-416/' --model yolov4 --tiny True --video 'rtsp://admin:m2m123123@10.15.0.4/stream1' --output '/yolo/data/outputs/' --dont_show True --output_format mp4v
-
+    # command: pm2 start /yolo/object_tracker.py -- --weights '/yolo/checkpoints/yolov4-tiny-416/' --model yolov4 --tiny True --video 'rtsp://admin:m2m123123@10.15.0.4/stream1' --output '/yolo/data/outputs/' --dont_show True --output_format mp4v
+    command: python3 /yolo/object_tracker.py --weights '/yolo/checkpoints/yolov4-tiny-416/' --model yolov4 --tiny True --video 'rtsp://admin:m2m123123@10.15.0.4/stream1' --output '/yolo/data/outputs/' --dont_show True --output_format mp4v
+    
+  web:
+    image: human_cam_web:latest
+    build: ./HumanCam_WebApp
+    ports:
+      - 8080:8888
+    volumes:
+      - ./HumanCam_WebApp/:/web
+      - ./HumanCam_WebApp/gunicorn.conf:/etc/supervisor/gunicorn.conf
+      - ./HumanCam_WebApp/supervisord.conf:/etc/supervisor/supervisord.conf
+    networks:
+      - web_humancam
+    depends_on:
+      - redis
+    # command: python app.py
+    # restart: always
+  redis:
+    image: "redis"
+    ports:
+      - 6379:6379
+    networks:
+      - web_humancam
+    volumes:
+      - ./HumanCam_WebApp/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./HumanCam_WebApp/data/:/data/ 
+    command: redis-server /usr/local/etc/redis/redis.conf
+    # restart: always
 networks:
   web_humancam:
     external: true
