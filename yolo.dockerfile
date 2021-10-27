@@ -14,9 +14,6 @@ RUN pip install opencv-python-headless
 RUN pip install -r requirements.txt
 RUN pip install pyparsing==2.4.2
 
-RUN apt-get install npm -y
-RUN npm install -g pm2
-
 RUN rm /usr/bin/python
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
