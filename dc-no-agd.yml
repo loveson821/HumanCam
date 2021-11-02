@@ -1,19 +1,6 @@
 version: "2.4"
 
 services:
-  agd:
-    image: human_cam_agd:latest
-    build: ./HumanCam_AGD
-    depends_on: [web]
-    ports:
-      - 5556:5556
-    # runtime: nvidia
-    volumes:
-      - ./HumanCam_AGD/:/agd
-    networks:
-      - web_humancam
-    restart: always
-    command: python age_and_gender_detection_live.py --rtsp='rtsp://admin:m2m123123@10.15.0.4/stream1'
 
   yolo:
     image: human_cam_yolo:latest
